@@ -1,7 +1,7 @@
 (function () {
       // ---------- ตั้งค่าเวอร์ชันและแหล่งอัปเดต ----------
       // เมื่อออกเวอร์ชันใหม่: เพิ่มเลข APP_VERSION ที่นี่ และแก้ "version" ใน version.json ให้ตรงกัน แล้ว push ขึ้น GitHub
-      const APP_VERSION = "1.1.0";
+      const APP_VERSION = "1.1.1";
       const UPDATE_REPO = "farmfoodmart-lab/Procurement";   // ชื่อบัญชี/ชื่อ repository บน GitHub
       const UPDATE_BRANCH = "main";
 
@@ -206,7 +206,54 @@
         return row;
       }
 
+      // ---------- ยืนยันตัวตนก่อนแก้ไขข้อมูลจำนวนขั้นต่ำ (นำเข้า / ลบข้อมูล / บันทึก) ----------
+      // ยืนยันครั้งเดียวต่อการเปิดหน้าต่าง สินค้า หนึ่งครั้ง ปิดหน้าต่างแล้วต้องยืนยันใหม่
+      const AUTH_USERNAME = "admin";
+      const AUTH_PASSWORD = "seniorsoftmaxx";
+      const authDialog = document.getElementById("auth-dialog");
+      const authForm = document.getElementById("auth-form");
+      const authUsername = document.getElementById("auth-username");
+      const authPassword = document.getElementById("auth-password");
+      const authError = document.getElementById("auth-error");
+      const authReason = document.getElementById("auth-reason");
+      let productsAuthorized = false;
+      let authResolve = null;
+
+      function finishAuth(ok) {
+        if (ok) productsAuthorized = true;
+        const resolve = authResolve;
+        authResolve = null;
+        if (authDialog.open) authDialog.close();
+        if (resolve) resolve(ok);
+      }
+
+      function requireAuth(actionLabel) {
+        if (productsAuthorized) return Promise.resolve(true);
+        if (authResolve) authResolve(false);
+        authForm.reset();
+        authError.textContent = "";
+        authReason.textContent = "กรุณาใส่ชื่อผู้ใช้และรหัสผ่านเพื่อ" + actionLabel;
+        authDialog.showModal();
+        authUsername.focus();
+        return new Promise(function (resolve) { authResolve = resolve; });
+      }
+
+      authForm.addEventListener("submit", function (event) {
+        event.preventDefault();
+        if (authUsername.value.trim() === AUTH_USERNAME && authPassword.value === AUTH_PASSWORD) {
+          finishAuth(true);
+        } else {
+          authError.textContent = "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง";
+          authPassword.value = "";
+          authPassword.focus();
+        }
+      });
+      document.getElementById("auth-cancel").addEventListener("click", function () { finishAuth(false); });
+      document.getElementById("auth-close").addEventListener("click", function () { finishAuth(false); });
+      authDialog.addEventListener("close", function () { if (authResolve) finishAuth(false); });
+
       function openProducts() {
+        productsAuthorized = false;
         renderProductsList();
         productsDialog.showModal();
         productsSearch.focus();
@@ -214,6 +261,7 @@
 
       // ลบข้อมูลทั้งหมด: จำนวนขั้นต่ำทุกรายการ (ฐานข้อมูลออนไลน์และในเครื่อง) และรายชื่อ/ลำดับที่นำเข้า
       async function clearProducts() {
+        if (!(await requireAuth("ลบข้อมูล"))) return;
         const names = Object.keys(loadMinimums());
         if (!window.confirm("ลบจำนวนขั้นต่ำทั้งหมด " + names.length + " รายการ และรายชื่อที่นำเข้าจากไฟล์?\nการลบนี้ย้อนกลับไม่ได้")) return;
         if (names.length > 0 && (!db || !cloudReady)) {
@@ -392,6 +440,7 @@
           productsDialog.close();
           return;
         }
+        if (!(await requireAuth("บันทึกข้อมูล"))) return;
 
         if (!db || !cloudReady) {
           // เชื่อมต่อฐานข้อมูลออนไลน์ไม่ได้: บันทึกไว้ในเครื่องก่อน แล้วจะอัปโหลดอัตโนมัติเมื่อเชื่อมต่อได้
@@ -775,7 +824,10 @@
       initCloud();
       productsButton.addEventListener("click", openProducts);
       productsForm.addEventListener("submit", saveProducts);
-      productsImport.addEventListener("click", function () { productsFile.click(); });
+      productsImport.addEventListener("click", function () {
+        requireAuth("นำเข้าข้อมูล").then(function (ok) { if (ok) productsFile.click(); });
+      });
+      productsDialog.addEventListener("close", function () { productsAuthorized = false; });
       productsClear.addEventListener("click", clearProducts);
       productsFile.addEventListener("change", function () {
         if (productsFile.files.length) importMinimums(productsFile.files[0]);

@@ -189,6 +189,11 @@
     .products-empty { padding: 36px 22px; color: var(--muted); font-size: 13px; text-align: center; }
     .products-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 22px; border-top: 1px solid var(--line); }
     .products-meta { color: var(--muted); font-size: 12px; }
+    .auth-dialog { width: min(380px, calc(100vw - 32px)); }
+    .auth-fields { display: flex; flex-direction: column; gap: 10px; padding: 4px 22px 14px; }
+    .auth-field { display: flex; flex-direction: column; gap: 5px; font-size: 12px; color: var(--muted); }
+    .auth-field .products-search { margin: 0; color: var(--ink); }
+    .auth-error { min-height: 16px; margin: 0; color: #b3261e; font-size: 12px; }
     @media (max-width: 680px) {
       .product-row { padding: 10px 16px; }
       .product-input { flex-basis: 84px; width: 84px; }

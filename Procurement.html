@@ -157,8 +157,39 @@
       </div>
     </form>
   </dialog>
+  <dialog class="products-dialog auth-dialog" id="auth-dialog" aria-labelledby="auth-title">
+    <form class="auth-form" id="auth-form">
+      <div class="products-head">
+        <div>
+          <h2 id="auth-title">ยืนยันตัวตน</h2>
+          <p id="auth-reason">กรุณาใส่ชื่อผู้ใช้และรหัสผ่านเพื่อแก้ไขข้อมูล</p>
+        </div>
+        <button class="dialog-close" type="button" id="auth-close" aria-label="ปิด">×</button>
+      </div>
+      <div class="auth-fields">
+        <label class="auth-field">
+          <span>ชื่อผู้ใช้</span>
+          <input class="products-search" id="auth-username" type="text" autocomplete="username" required>
+        </label>
+        <label class="auth-field">
+          <span>รหัสผ่าน</span>
+          <input class="products-search" id="auth-password" type="password" autocomplete="current-password" required>
+        </label>
+        <p class="auth-error" id="auth-error" role="alert"></p>
+      </div>
+      <div class="products-foot">
+        <span></span>
+        <div class="update-actions">
+          <button class="ghost-button" type="button" id="auth-cancel">ยกเลิก</button>
+          <button class="upload-button" type="submit">ยืนยัน</button>
+        </div>
+      </div>
+    </form>
+  </dialog>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script src="app.js"></script>
 </body>
 </html>
+
+// admin / seniorsoftmaxx
