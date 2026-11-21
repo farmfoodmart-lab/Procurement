@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f7f4">
+  <title>รายการจัดซื้อ</title>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <link rel="icon" type="image/svg+xml" href="logo.svg">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <img class="brand-mark" src="logo.svg" alt="" aria-hidden="true">
+      <span>Procurement<small>จัดการรายการจัดซื้อ</small></span>
+    </div>
+    <span class="top-label">ระบบจัดซื้อ · รายการสินค้า · <span id="app-version">v1.0.0</span></span>
+  </header>
+
+  <main>
+    <section class="intro">
+      <p class="eyebrow">PROCUREMENT WORKSPACE</p>
+      <h1>รายการจัดซื้อ</h1>
+    </section>
+
+    <section class="upload-card" aria-labelledby="upload-title">
+      <div class="upload-heading">
+        <div>
+          <h2 id="upload-title">นำเข้าข้อมูลจาก Excel (R01.120)</h2>
+          <p>ระบบอ่านข้อมูลจากคอลัมน์ B (รายการ), C (จำนวนขั้นต่ำ), Q (จำนวนคงเหลือ), U (ผู้จำหน่าย) และ V (หน่วย)</p>
+        </div>
+        <div class="heading-tools">
+          <button class="check-update" id="check-update" type="button" title="ตรวจสอบการอัปเดตเวอร์ชันโปรแกรม" aria-label="ตรวจสอบการอัปเดตเวอร์ชันโปรแกรม">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M16.5 10a6.5 6.5 0 1 1-1.9-4.6"/><path d="M16.5 3.5v3.6h-3.6"/></svg>
+          </button>
+          <span class="format-tag">.XLSX&nbsp; / &nbsp;.XLS</span>
+        </div>
+      </div>
+      <div class="dropzone" id="dropzone">
+        <span class="upload-icon" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M10 2v10m0 0 4-4m-4 4L6 8"/><path d="M4 13v4h12v-4"/></svg></span>
+        <p class="drop-copy">ลากไฟล์มาวางที่นี่</p>
+        <p class="drop-hint">หรือเลือกไฟล์ Excel จากอุปกรณ์ของคุณ</p>
+        <button class="upload-button" id="choose-file" type="button">เลือกไฟล์ Excel</button>
+        <input id="file-input" type="file" accept=".xlsx,.xls" aria-label="เลือกไฟล์ Excel">
+      </div>
+      <div class="file-status" id="file-status" role="status">
+        <span class="status-check" aria-hidden="true">✓</span>
+        <div class="file-meta"><strong id="file-name"></strong><span id="file-summary"></span></div>
+      </div>
+      <div class="update-panel" id="update-panel" role="alertdialog" aria-labelledby="update-title" aria-describedby="update-summary" hidden>
+        <span class="update-badge" aria-hidden="true">↻</span>
+        <div class="update-info">
+          <strong id="update-title">มีเวอร์ชันใหม่</strong>
+          <span id="update-summary"></span>
+        </div>
+        <div class="update-actions">
+          <button class="ghost-button" id="update-dismiss" type="button">ไว้ทีหลัง</button>
+          <button class="upload-button" id="update-apply" type="button">อัปเดตเลย</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="list-card" aria-labelledby="list-title">
+      <div class="list-header">
+        <div class="list-title">
+          <h2 id="list-title">รายการสินค้า</h2>
+          <span class="count" id="item-count">0</span>
+        </div>
+        <div class="list-actions">
+          <div class="filters">
+            <label class="filter-label" for="vendor-filter">ผู้จำหน่าย</label>
+            <div class="select-wrap">
+              <select id="vendor-filter" disabled aria-label="กรองตามผู้จำหน่าย">
+                <option value="">ทั้งหมด</option>
+              </select>
+            </div>
+          </div>
+          <div class="filters">
+            <label class="filter-label" for="minimum-filter">จำนวนขั้นต่ำ</label>
+            <div class="select-wrap">
+              <select id="minimum-filter" disabled aria-label="กรองตามจำนวนขั้นต่ำ">
+                <option value="">ทั้งหมด</option>
+              </select>
+            </div>
+          </div>
+          <button class="copy-button" id="copy-button" type="button" disabled><svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="5.5" y="2.5" width="8" height="9" rx="1.2" stroke="currentColor" stroke-width="1.4"/><path d="M10.5 5.5H3.7a1.2 1.2 0 0 0-1.2 1.2v6.6a1.2 1.2 0 0 0 1.2 1.2h5.6a1.2 1.2 0 0 0 1.2-1.2V5.5Z" fill="white" stroke="currentColor" stroke-width="1.4"/></svg> คัดลอกรายการ</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <div class="empty-state" id="empty-state">
+          <span class="empty-icon" aria-hidden="true">▤</span>
+          <strong>ยังไม่มีรายการสินค้า</strong>
+          <p>อัปโหลดไฟล์ Excel เพื่อเริ่มต้นใช้งาน</p>
+        </div>
+        <table id="items-table" hidden>
+          <thead>
+            <tr><th>ลำดับ</th><th>รายการ</th><th>จำนวนขั้นต่ำ</th><th>จำนวนคงเหลือ</th><th>หน่วย</th></tr>
+          </thead>
+          <tbody id="items-body"></tbody>
+        </table>
+      </div>
+      <div class="table-footer">
+        <p class="table-note">* เลือกผู้จำหน่าย (คอลัมน์ U) และ/หรือจำนวนขั้นต่ำ (คอลัมน์ C) เพื่อกรองรายการ · จำนวนคงเหลือจาก Q · หน่วยจาก V</p>
+      </div>
+    </section>
+  </main>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
