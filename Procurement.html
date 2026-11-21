@@ -6,6 +6,8 @@
   <meta name="theme-color" content="#f5f7f4">
   <title>รายการจัดซื้อ</title>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <link rel="icon" type="image/svg+xml" href="logo.svg">
   <link rel="stylesheet" href="styles.css">
 </head>
@@ -15,7 +17,7 @@
       <img class="brand-mark" src="logo.svg" alt="" aria-hidden="true">
       <span>Procurement<small>จัดการรายการจัดซื้อ</small></span>
     </div>
-    <span class="top-label">ระบบจัดซื้อ · รายการสินค้า · <span id="app-version">v1.0.0</span></span>
+    <span class="top-label">ระบบจัดซื้อ · รายการสินค้า · <span id="app-version">v1.1.0</span></span>
   </header>
 
   <main>
@@ -27,8 +29,8 @@
     <section class="upload-card" aria-labelledby="upload-title">
       <div class="upload-heading">
         <div>
-          <h2 id="upload-title">นำเข้าข้อมูลจาก Excel (R01.120)</h2>
-          <p>ระบบอ่านข้อมูลจากคอลัมน์ B (รายการ), C (จำนวนขั้นต่ำ), Q (จำนวนคงเหลือ), U (ผู้จำหน่าย) และ V (หน่วย)</p>
+          <h2 id="upload-title">นำเข้าข้อมูลจาก Excel (R01.102)</h2>
+          <p>ระบบอ่านข้อมูลจากคอลัมน์ D (คลัง), F (รายการ), G (จำนวนคงเหลือ) และ H (หน่วย) · จำนวนขั้นต่ำกำหนดที่ปุ่ม สินค้า</p>
         </div>
         <div class="heading-tools">
           <button class="check-update" id="check-update" type="button" title="ตรวจสอบการอัปเดตเวอร์ชันโปรแกรม" aria-label="ตรวจสอบการอัปเดตเวอร์ชันโปรแกรม">
@@ -68,10 +70,14 @@
           <span class="count" id="item-count">0</span>
         </div>
         <div class="list-actions">
+          <div class="search-wrap">
+            <svg aria-hidden="true" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.6"/><path d="m10.4 10.4 3.1 3.1"/></svg>
+            <input class="item-search" id="item-search" type="search" placeholder="ค้นหาสินค้า..." aria-label="ค้นหาสินค้า" disabled>
+          </div>
           <div class="filters">
-            <label class="filter-label" for="vendor-filter">ผู้จำหน่าย</label>
+            <label class="filter-label" for="warehouse-filter">คลัง</label>
             <div class="select-wrap">
-              <select id="vendor-filter" disabled aria-label="กรองตามผู้จำหน่าย">
+              <select id="warehouse-filter" disabled aria-label="กรองตามคลัง">
                 <option value="">ทั้งหมด</option>
               </select>
             </div>
@@ -84,6 +90,27 @@
               </select>
             </div>
           </div>
+          <div class="filters">
+            <label class="filter-label" for="stock-sort">เรียงคงเหลือ</label>
+            <div class="select-wrap">
+              <select id="stock-sort" class="sort-select" disabled aria-label="เรียงตามจำนวนคงเหลือ">
+                <option value="">ค่าเริ่มต้น</option>
+                <option value="desc">มากไปน้อย</option>
+                <option value="asc">น้อยไปมาก</option>
+              </select>
+            </div>
+          </div>
+          <label class="toggle-filter" title="แสดงเฉพาะสินค้าที่กำหนดจำนวนขั้นต่ำไว้">
+            <input type="checkbox" id="has-minimum-toggle" disabled>
+            <span class="toggle-track" aria-hidden="true"><span class="toggle-thumb"></span></span>
+            <span class="filter-label">มีจำนวนขั้นต่ำ</span>
+          </label>
+          <label class="toggle-filter" title="แสดงเฉพาะสินค้าที่จำนวนคงเหลือน้อยกว่าจำนวนขั้นต่ำ">
+            <input type="checkbox" id="below-minimum-toggle" disabled>
+            <span class="toggle-track" aria-hidden="true"><span class="toggle-thumb"></span></span>
+            <span class="filter-label">ต่ำกว่าขั้นต่ำ</span>
+          </label>
+          <button class="copy-button" id="products-button" type="button" title="กำหนดจำนวนขั้นต่ำของสินค้าแต่ละตัว"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><path d="M8 1.8 13.5 4.6v6.8L8 14.2 2.5 11.4V4.6L8 1.8Z"/><path d="M2.5 4.6 8 7.4l5.5-2.8M8 7.4v6.8"/></svg> สินค้า</button>
           <button class="copy-button" id="copy-button" type="button" disabled><svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="5.5" y="2.5" width="8" height="9" rx="1.2" stroke="currentColor" stroke-width="1.4"/><path d="M10.5 5.5H3.7a1.2 1.2 0 0 0-1.2 1.2v6.6a1.2 1.2 0 0 0 1.2 1.2h5.6a1.2 1.2 0 0 0 1.2-1.2V5.5Z" fill="white" stroke="currentColor" stroke-width="1.4"/></svg> คัดลอกรายการ</button>
         </div>
       </div>
@@ -95,16 +122,41 @@
         </div>
         <table id="items-table" hidden>
           <thead>
-            <tr><th>ลำดับ</th><th>รายการ</th><th>จำนวนขั้นต่ำ</th><th>จำนวนคงเหลือ</th><th>หน่วย</th></tr>
+            <tr><th>ลำดับ</th><th>รายการ</th><th>จำนวนคงเหลือ</th><th>หน่วย</th><th>จำนวนขั้นต่ำ</th></tr>
           </thead>
           <tbody id="items-body"></tbody>
         </table>
       </div>
       <div class="table-footer">
-        <p class="table-note">* เลือกผู้จำหน่าย (คอลัมน์ U) และ/หรือจำนวนขั้นต่ำ (คอลัมน์ C) เพื่อกรองรายการ · จำนวนคงเหลือจาก Q · หน่วยจาก V</p>
+        <p class="table-note">* เลือกคลัง (คอลัมน์ D) และ/หรือจำนวนขั้นต่ำ (กำหนดที่ปุ่ม สินค้า) เพื่อกรองรายการ · จำนวนคงเหลือจาก G · หน่วยจาก H</p>
       </div>
     </section>
   </main>
+  <dialog class="products-dialog" id="products-dialog" aria-labelledby="products-title">
+    <form method="dialog" class="products-form" id="products-form">
+      <div class="products-head">
+        <div>
+          <h2 id="products-title">จำนวนขั้นต่ำของสินค้า(R05.101)</h2>
+          <p>กำหนดจำนวนขั้นต่ำของสินค้าแต่ละตัว ค่าที่บันทึกจะเก็บในฐานข้อมูลออนไลน์ และใช้ทุกครั้งที่นำเข้าไฟล์ · เว้นว่างเพื่อลบค่า</p>
+        </div>
+        <button class="dialog-close" type="button" id="products-close" aria-label="ปิด">×</button>
+      </div>
+      <div class="products-tools">
+        <input class="products-search" id="products-search" type="search" placeholder="ค้นหาสินค้า..." aria-label="ค้นหาสินค้า">
+        <button class="copy-button" id="products-import" type="button" title="นำเข้าจากไฟล์ Excel (R05.101) · ชื่อสินค้าคอลัมน์ B · จำนวนขั้นต่ำคอลัมน์ Z · เรียงตามไฟล์"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v8m0 0 3-3m-3 3L5 7"/><path d="M2.5 10.5v3h11v-3"/></svg> นำเข้า</button>
+        <button class="copy-button danger-button" id="products-clear" type="button" title="ลบจำนวนขั้นต่ำทั้งหมดและรายชื่อที่นำเข้า"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 4.5h11M6 4.5V2.8h4v1.7M4 4.5l.7 8.7h6.6l.7-8.7M6.7 7v4M9.3 7v4"/></svg> ลบข้อมูล</button>
+        <input id="products-file" type="file" accept=".xlsx,.xls" hidden aria-label="เลือกไฟล์ Excel จำนวนขั้นต่ำ">
+      </div>
+      <div class="products-list" id="products-list"></div>
+      <div class="products-foot">
+        <span class="products-meta" id="products-meta"></span>
+        <div class="update-actions">
+          <button class="ghost-button" type="button" id="products-cancel">ยกเลิก</button>
+          <button class="upload-button" type="submit" id="products-save">บันทึก</button>
+        </div>
+      </div>
+    </form>
+  </dialog>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script src="app.js"></script>
