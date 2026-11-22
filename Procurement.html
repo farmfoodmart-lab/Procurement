@@ -17,7 +17,7 @@
       <img class="brand-mark" src="logo.svg" alt="" aria-hidden="true">
       <span>Procurement<small>จัดการรายการจัดซื้อ</small></span>
     </div>
-    <span class="top-label">ระบบจัดซื้อ · รายการสินค้า · <span id="app-version">v1.1.0</span></span>
+    <span class="top-label">ระบบจัดซื้อ · รายการสินค้า · <span id="app-version">v1.1.2</span></span>
   </header>
 
   <main>
@@ -143,6 +143,11 @@
       </div>
       <div class="products-tools">
         <input class="products-search" id="products-search" type="search" placeholder="ค้นหาสินค้า..." aria-label="ค้นหาสินค้า">
+        <label class="toggle-filter" title="แสดงและเรียงสินค้าตามตัวกรองของหน้าแรก (คลัง, จำนวนขั้นต่ำ, เรียงคงเหลือ, ค้นหา)">
+          <input type="checkbox" id="products-follow-main">
+          <span class="toggle-track" aria-hidden="true"><span class="toggle-thumb"></span></span>
+          <span class="filter-label">ตามหน้าแรก</span>
+        </label>
         <button class="copy-button" id="products-import" type="button" title="นำเข้าจากไฟล์ Excel (R05.101) · ชื่อสินค้าคอลัมน์ B · จำนวนขั้นต่ำคอลัมน์ Z · เรียงตามไฟล์"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v8m0 0 3-3m-3 3L5 7"/><path d="M2.5 10.5v3h11v-3"/></svg> นำเข้า</button>
         <button class="copy-button danger-button" id="products-clear" type="button" title="ลบจำนวนขั้นต่ำทั้งหมดและรายชื่อที่นำเข้า"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 4.5h11M6 4.5V2.8h4v1.7M4 4.5l.7 8.7h6.6l.7-8.7M6.7 7v4M9.3 7v4"/></svg> ลบข้อมูล</button>
         <input id="products-file" type="file" accept=".xlsx,.xls" hidden aria-label="เลือกไฟล์ Excel จำนวนขั้นต่ำ">

@@ -173,7 +173,7 @@
     .dialog-close:hover { color: var(--ink); background: #f2f5f2; }
     .products-tools { display: flex; gap: 8px; margin: 0 22px 12px; }
     .products-tools .products-search { flex: 1 1 auto; min-width: 0; margin: 0; }
-    .products-tools .copy-button { flex: 0 0 auto; }
+    .products-tools .copy-button, .products-tools .toggle-filter { flex: 0 0 auto; }
     .danger-button { color: #b3261e; border-color: #f0c9c5; }
     .copy-button.danger-button:hover:not(:disabled) { background: #fdf0ef; }
     .products-search { margin: 0 22px 12px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 9px; outline: 0; font: inherit; font-size: 13px; }

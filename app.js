@@ -1,7 +1,7 @@
 (function () {
       // ---------- ตั้งค่าเวอร์ชันและแหล่งอัปเดต ----------
       // เมื่อออกเวอร์ชันใหม่: เพิ่มเลข APP_VERSION ที่นี่ และแก้ "version" ใน version.json ให้ตรงกัน แล้ว push ขึ้น GitHub
-      const APP_VERSION = "1.1.1";
+      const APP_VERSION = "1.1.2";
       const UPDATE_REPO = "farmfoodmart-lab/Procurement";   // ชื่อบัญชี/ชื่อ repository บน GitHub
       const UPDATE_BRANCH = "main";
 
@@ -323,7 +323,34 @@
             productsList.appendChild(createProductRow(product, value));
           });
         sortProductRows(order);
+        applyProductsView();
         updateProductsMeta();
+      }
+
+      // ---------- สวิตช์ "ตามหน้าแรก": แสดงและเรียงสินค้าในหน้าต่างตามตัวกรองของหน้าแรก ----------
+      const productsFollowMain = document.getElementById("products-follow-main");
+      const FOLLOW_KEY = "procurement-products-follow-main";
+      try { productsFollowMain.checked = localStorage.getItem(FOLLOW_KEY) === "1"; } catch (error) { /* ใช้ค่าเริ่มต้น */ }
+
+      function applyProductsView() {
+        const follow = productsFollowMain.checked;
+        const query = productsSearch.value.trim().toLowerCase();
+        const visible = follow ? getVisibleItems().map(function (item) { return item.name; }) : null;
+        const visibleSet = visible ? new Set(visible) : null;
+        // เปิด: เรียงตามรายการในหน้าแรก · ปิด: กลับไปเรียงตามไฟล์ที่นำเข้า/ชื่อสินค้า
+        if (follow) {
+          sortProductRows(visible);
+        } else {
+          Array.from(productsList.querySelectorAll(".product-row"))
+            .sort(function (a, b) { return a.dataset.search.localeCompare(b.dataset.search, "th", { numeric: true }); })
+            .forEach(function (row) { productsList.appendChild(row); });
+          sortProductRows(loadProductOrder());
+        }
+        productsList.querySelectorAll(".product-row").forEach(function (row) {
+          const name = row.querySelector(".product-input").dataset.name;
+          row.hidden = (query !== "" && !row.dataset.search.includes(query))
+            || (visibleSet !== null && !visibleSet.has(name));
+        });
       }
 
       // ---------- นำเข้าจำนวนขั้นต่ำจากไฟล์ Excel (R05.101) ----------
@@ -835,11 +862,11 @@
       });
       document.getElementById("products-close").addEventListener("click", function () { productsDialog.close(); });
       document.getElementById("products-cancel").addEventListener("click", function () { productsDialog.close(); });
-      productsSearch.addEventListener("input", function () {
-        const query = productsSearch.value.trim().toLowerCase();
-        productsList.querySelectorAll(".product-row").forEach(function (row) {
-          row.hidden = query !== "" && !row.dataset.search.includes(query);
-        });
+      productsSearch.addEventListener("input", applyProductsView);
+      productsFollowMain.addEventListener("change", function () {
+        try { localStorage.setItem(FOLLOW_KEY, productsFollowMain.checked ? "1" : "0"); } catch (error) { /* ไม่จำก็ได้ */ }
+        applyProductsView();
+        productsList.scrollTop = 0;
       });
       productsSearch.addEventListener("keydown", function (event) {
         if (event.key === "Enter") event.preventDefault();
