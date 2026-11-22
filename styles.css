@@ -31,8 +31,6 @@
     .top-label { color: var(--muted); font-size: 13px; }
 
     main { width: min(1120px, calc(100% - 48px)); margin: 46px auto 72px; }
-    .intro { margin-bottom: 27px; }
-    .eyebrow { margin: 0 0 8px; color: var(--green); font-size: 12px; font-weight: 750; letter-spacing: 1.4px; }
     h1 { margin: 0; font-size: clamp(26px, 4vw, 35px); letter-spacing: -.8px; }
     .subtitle { margin: 9px 0 0; color: var(--muted); font-size: 15px; }
 

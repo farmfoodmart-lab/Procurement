@@ -1,7 +1,7 @@
 (function () {
       // ---------- ตั้งค่าเวอร์ชันและแหล่งอัปเดต ----------
       // เมื่อออกเวอร์ชันใหม่: เพิ่มเลข APP_VERSION ที่นี่ และแก้ "version" ใน version.json ให้ตรงกัน แล้ว push ขึ้น GitHub
-      const APP_VERSION = "1.1.2";
+      const APP_VERSION = "1.1.3";
       const UPDATE_REPO = "farmfoodmart-lab/Procurement";   // ชื่อบัญชี/ชื่อ repository บน GitHub
       const UPDATE_BRANCH = "main";
 
